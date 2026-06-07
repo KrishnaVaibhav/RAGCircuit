@@ -7,7 +7,7 @@ name = "core-rag"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "langfuse>=2.0",
+    "langfuse>=4.0",
     "opentelemetry-sdk>=1.20",
     "qdrant-client>=1.7",
     "httpx>=0.25",
