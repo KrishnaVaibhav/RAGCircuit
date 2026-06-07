@@ -5,7 +5,7 @@ import os
 import httpx
 from core_rag.tracing import langfuse, observe_span
 
-RAG_API_URL = os.environ.get("RAG_API_URL", "http://localhost:8000")
+RAG_API_URL = os.environ.get("RAG_API_URL") or "http://localhost:8000"
 
 # Populate with question/ground_truth pairs to evaluate against.
 EVAL_QUESTIONS: list[dict] = [

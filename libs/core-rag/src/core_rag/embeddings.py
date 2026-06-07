@@ -15,7 +15,7 @@ def _get_model() -> SentenceTransformer:
     global _model
     if _model is None:
         _model = SentenceTransformer(
-            os.environ.get("EMBED_MODEL", "all-MiniLM-L6-v2")
+            os.environ.get("EMBED_MODEL") or "all-MiniLM-L6-v2"
         )
     return _model
 

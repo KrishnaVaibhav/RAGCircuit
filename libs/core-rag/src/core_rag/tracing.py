@@ -7,7 +7,7 @@ from langfuse import Langfuse, observe
 langfuse = Langfuse(
     public_key=os.environ.get("LANGFUSE_PUBLIC_KEY", ""),
     secret_key=os.environ.get("LANGFUSE_SECRET_KEY", ""),
-    host=os.environ.get("LANGFUSE_HOST", "http://localhost:3000"),
+    host=os.environ.get("LANGFUSE_HOST") or "http://localhost:3000",
 )
 
 observe_span = observe

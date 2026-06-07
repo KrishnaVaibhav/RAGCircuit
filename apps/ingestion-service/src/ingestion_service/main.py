@@ -5,7 +5,7 @@ import os
 from core_rag import chunking, embeddings, retrieval
 from core_rag.tracing import observe_span
 
-COLLECTION = os.environ.get("COLLECTION_NAME", "documents")
+COLLECTION = os.environ.get("COLLECTION_NAME") or "documents"
 VECTOR_SIZE = int(os.environ.get("VECTOR_SIZE") or "384")
 
 

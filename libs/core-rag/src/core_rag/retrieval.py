@@ -18,7 +18,7 @@ def _get_client() -> QdrantClient:
     global _client
     if _client is None:
         _client = QdrantClient(
-            url=os.environ.get("VECTOR_DB_URL", "http://localhost:6333")
+            url=os.environ.get("VECTOR_DB_URL") or "http://localhost:6333"
         )
     return _client
 
