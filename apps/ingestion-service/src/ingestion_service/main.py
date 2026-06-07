@@ -6,7 +6,7 @@ from core_rag import chunking, embeddings, retrieval
 from core_rag.tracing import observe_span
 
 COLLECTION = os.environ.get("COLLECTION_NAME", "documents")
-VECTOR_SIZE = int(os.environ.get("VECTOR_SIZE", "384"))
+VECTOR_SIZE = int(os.environ.get("VECTOR_SIZE") or "384")
 
 
 def load_raw_docs() -> list[dict]:
