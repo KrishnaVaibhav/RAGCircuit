@@ -3,6 +3,7 @@ testpaths = ["apps", "libs"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+addopts = "--import-mode=importlib"
 
 [tool.ruff]
 target-version = "py311"

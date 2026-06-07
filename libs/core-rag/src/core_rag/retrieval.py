@@ -5,7 +5,7 @@ import uuid
 
 import numpy as np
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from .chunking import Chunk
 from .tracing import observe_span
