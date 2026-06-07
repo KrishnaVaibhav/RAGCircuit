@@ -1,0 +1,131 @@
+version: "3.9"
+
+services:
+  # ── Infrastructure ────────────────────────────────────────────────────────
+
+  vector-db:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  llm-backend:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # ── Observability ─────────────────────────────────────────────────────────
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse@postgres:5432/langfuse
+      NEXTAUTH_SECRET: changeme
+      SALT: changeme
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./otel-collector/config.yml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - "4317:4317"   # gRPC
+      - "4318:4318"   # HTTP
+    depends_on:
+      - jaeger
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"   # UI
+      - "14250:14250"   # gRPC (collector → Jaeger)
+
+  # ── Applications ──────────────────────────────────────────────────────────
+
+  ingestion-service:
+    build:
+      context: ..
+      dockerfile: apps/ingestion-service/Dockerfile
+    environment:
+      VECTOR_DB_URL: http://vector-db:6333
+      LANGFUSE_HOST: http://langfuse:3000
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      COLLECTION_NAME: ${COLLECTION_NAME:-documents}
+      VECTOR_SIZE: ${VECTOR_SIZE:-384}
+    depends_on:
+      - vector-db
+      - langfuse
+    profiles:
+      - ingestion   # run with: docker compose --profile ingestion up ingestion-service
+
+  rag-api:
+    build:
+      context: ..
+      dockerfile: apps/rag-api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      VECTOR_DB_URL: http://vector-db:6333
+      LLM_URL: http://llm-backend:11434
+      LLM_MODEL: ${LLM_MODEL:-llama3.2}
+      LANGFUSE_HOST: http://langfuse:3000
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+      COLLECTION_NAME: ${COLLECTION_NAME:-documents}
+    depends_on:
+      - vector-db
+      - llm-backend
+      - langfuse
+
+  eval-service:
+    build:
+      context: ..
+      dockerfile: apps/eval-service/Dockerfile
+    environment:
+      RAG_API_URL: http://rag-api:8000
+      LANGFUSE_HOST: http://langfuse:3000
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
+    depends_on:
+      - rag-api
+      - langfuse
+    profiles:
+      - eval   # run with: docker compose --profile eval up eval-service
+
+volumes:
+  qdrant_data:
+  ollama_data:
+  pg_data:
+  grafana_data:
