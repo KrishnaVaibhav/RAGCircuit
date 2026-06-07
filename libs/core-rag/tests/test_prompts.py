@@ -1,4 +1,4 @@
-from core_rag.prompts import RAG_TEMPLATE, build_prompt
+from core_rag.prompts import build_prompt
 from core_rag.types import RetrievedDoc
 
 
@@ -7,7 +7,8 @@ def _make_doc(text: str) -> RetrievedDoc:
 
 
 def test_question_appears_in_prompt():
-    prompt = build_prompt("What is RAG?", [_make_doc("RAG stands for retrieval-augmented generation.")])
+    doc = _make_doc("RAG stands for retrieval-augmented generation.")
+    prompt = build_prompt("What is RAG?", [doc])
     assert "What is RAG?" in prompt
 
 
