@@ -1,0 +1,33 @@
+name: Ingestion Job
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"  # 02:00 UTC daily
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install packages
+        run: |
+          pip install -e libs/core-rag
+          pip install -e apps/ingestion-service
+
+      - name: Run ingestion
+        env:
+          VECTOR_DB_URL: ${{ secrets.VECTOR_DB_URL }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+          COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+          VECTOR_SIZE: ${{ secrets.VECTOR_SIZE }}
+        run: python apps/ingestion-service/src/ingestion_service/main.py

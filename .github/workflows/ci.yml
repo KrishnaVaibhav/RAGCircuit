@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      qdrant:
+        image: qdrant/qdrant:latest
+        ports:
+          - "6333:6333"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install packages
+        run: |
+          pip install -e libs/core-rag
+          pip install -e apps/ingestion-service
+          pip install -e apps/rag-api
+          pip install -e apps/eval-service
+          pip install pytest ruff
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        env:
+          VECTOR_DB_URL: http://localhost:6333
+          LANGFUSE_PUBLIC_KEY: test
+          LANGFUSE_SECRET_KEY: test
+          LANGFUSE_HOST: http://localhost:3000
+        run: pytest
