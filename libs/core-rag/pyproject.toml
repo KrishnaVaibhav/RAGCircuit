@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "core-rag"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "langfuse>=2.0",
+    "opentelemetry-sdk>=1.20",
+    "qdrant-client>=1.7",
+    "httpx>=0.25",
+    "pydantic>=2.0",
+    "sentence-transformers>=2.0",
+    "langchain-text-splitters>=0.0.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/core_rag"]
