@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import os
 
-from fastapi import FastAPI
-from pydantic import BaseModel
-
 from core_rag import llm, prompts, ranking, retrieval
 from core_rag.chunking import Chunk
 from core_rag.embeddings import embed_chunks
 from core_rag.tracing import observe_span
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI(title="RAG API", version="0.1.0")
 

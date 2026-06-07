@@ -3,10 +3,9 @@ from __future__ import annotations
 import os
 import uuid
 
-from qdrant_client.models import PointStruct
-
 from core_rag import chunking, embeddings, retrieval
 from core_rag.tracing import observe_span
+from qdrant_client.models import PointStruct
 
 COLLECTION = os.environ.get("COLLECTION_NAME", "documents")
 VECTOR_SIZE = int(os.environ.get("VECTOR_SIZE", "384"))

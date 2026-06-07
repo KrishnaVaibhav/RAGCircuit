@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import httpx
-
 from core_rag.tracing import langfuse, observe_span
 
 RAG_API_URL = os.environ.get("RAG_API_URL", "http://localhost:8000")
