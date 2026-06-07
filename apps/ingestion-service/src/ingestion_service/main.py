@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 
 from core_rag import chunking, embeddings, retrieval
 from core_rag.tracing import observe_span
@@ -34,4 +35,8 @@ def run_ingestion() -> None:
 
 
 if __name__ == "__main__":
-    run_ingestion()
+    try:
+        run_ingestion()
+    except NotImplementedError as e:
+        print(f"Skipping ingestion: {e}", file=sys.stderr)
+        sys.exit(0)
