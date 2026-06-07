@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from qdrant_client.models import ScoredPoint
+from .types import RetrievedDoc
 
 RAG_TEMPLATE = """\
 Answer the question using only the provided context. \
@@ -14,8 +14,6 @@ Question: {question}
 Answer:"""
 
 
-def build_prompt(question: str, context_docs: list[ScoredPoint]) -> str:
-    context = "\n\n".join(
-        d.payload.get("text", "") for d in context_docs if d.payload
-    )
+def build_prompt(question: str, context_docs: list[RetrievedDoc]) -> str:
+    context = "\n\n".join(d.text for d in context_docs)
     return RAG_TEMPLATE.format(context=context, question=question)

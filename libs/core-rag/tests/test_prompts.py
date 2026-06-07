@@ -1,12 +1,9 @@
-from unittest.mock import MagicMock
-
 from core_rag.prompts import RAG_TEMPLATE, build_prompt
+from core_rag.types import RetrievedDoc
 
 
-def _make_doc(text: str) -> MagicMock:
-    doc = MagicMock()
-    doc.payload = {"text": text}
-    return doc
+def _make_doc(text: str) -> RetrievedDoc:
+    return RetrievedDoc(id="doc-id", text=text, score=1.0)
 
 
 def test_question_appears_in_prompt():
@@ -38,8 +35,7 @@ def test_prompt_uses_rag_template_structure():
     assert "Answer:" in prompt
 
 
-def test_doc_with_no_payload_text_skipped():
-    doc = MagicMock()
-    doc.payload = {}
+def test_doc_with_empty_text_still_includes_question():
+    doc = RetrievedDoc(id="doc-id", text="", score=1.0)
     prompt = build_prompt("q?", [doc])
     assert "Question: q?" in prompt

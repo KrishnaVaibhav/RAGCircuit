@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-from qdrant_client.models import ScoredPoint
-
 from .tracing import observe_span
+from .types import RetrievedDoc
 
 
 @observe_span(name="ranking.rank")
 def rank(
     query: str,
-    candidates: list[ScoredPoint],
+    candidates: list[RetrievedDoc],
     top_k: int = 5,
-) -> list[ScoredPoint]:
+) -> list[RetrievedDoc]:
     """Re-rank retrieval candidates.
 
     Default implementation: pass-through, score-ordered from Qdrant.

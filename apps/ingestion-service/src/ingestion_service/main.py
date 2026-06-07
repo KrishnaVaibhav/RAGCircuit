@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import os
-import uuid
 
 from core_rag import chunking, embeddings, retrieval
 from core_rag.tracing import observe_span
-from qdrant_client.models import PointStruct
 
 COLLECTION = os.environ.get("COLLECTION_NAME", "documents")
 VECTOR_SIZE = int(os.environ.get("VECTOR_SIZE", "384"))
@@ -31,17 +29,8 @@ def run_ingestion() -> None:
     embedded = embeddings.embed_chunks(chunks)
 
     retrieval.ensure_collection(COLLECTION, VECTOR_SIZE)
-
-    points = [
-        PointStruct(
-            id=str(uuid.uuid4()),
-            vector=vec.tolist(),
-            payload={"text": chunk.text, **chunk.metadata},
-        )
-        for chunk, vec in embedded
-    ]
-    retrieval.upsert(COLLECTION, points)
-    print(f"Ingested {len(points)} chunks into '{COLLECTION}'")
+    retrieval.upsert_chunks(COLLECTION, embedded)
+    print(f"Ingested {len(embedded)} chunks into '{COLLECTION}'")
 
 
 if __name__ == "__main__":

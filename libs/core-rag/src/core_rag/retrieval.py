@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import os
+import uuid
 
+import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams
 
+from .chunking import Chunk
 from .tracing import observe_span
+from .types import RetrievedDoc
 
 _client: QdrantClient | None = None
 
@@ -37,14 +41,38 @@ def upsert(collection: str, points: list[PointStruct]) -> None:
     _get_client().upsert(collection_name=collection, points=points)
 
 
+def upsert_chunks(
+    collection: str,
+    embedded: list[tuple[Chunk, np.ndarray]],
+) -> None:
+    points = [
+        PointStruct(
+            id=str(uuid.uuid4()),
+            vector=vec.tolist(),
+            payload={"text": chunk.text, **chunk.metadata},
+        )
+        for chunk, vec in embedded
+    ]
+    _get_client().upsert(collection_name=collection, points=points)
+
+
 @observe_span(name="retrieval.retrieve")
 def retrieve(
     query_vector: list[float],
     collection: str,
     top_k: int = 10,
-) -> list[ScoredPoint]:
-    return _get_client().search(
+) -> list[RetrievedDoc]:
+    results = _get_client().search(
         collection_name=collection,
         query_vector=query_vector,
         limit=top_k,
     )
+    return [
+        RetrievedDoc(
+            id=str(r.id),
+            text=r.payload.get("text", "") if r.payload else "",
+            score=r.score,
+            metadata={k: v for k, v in (r.payload or {}).items() if k != "text"},
+        )
+        for r in results
+    ]
